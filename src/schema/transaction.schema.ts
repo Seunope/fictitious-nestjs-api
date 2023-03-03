@@ -19,6 +19,9 @@ export class Transaction {
   description: string;
 
   @Prop()
+  platform: string;
+
+  @Prop()
   status: string;
 
   @Prop()

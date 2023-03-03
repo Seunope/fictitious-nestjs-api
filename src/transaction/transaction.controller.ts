@@ -28,6 +28,7 @@ export class TransactionController {
     const data = {
       ...createUserDto,
       userId,
+      amount: Number(createUserDto.amount),
       type: 'credit',
     };
 

@@ -1,22 +1,40 @@
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { ITransaction } from '../interface/transaction.interface';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotAcceptableException,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   CreateTransactionDto,
   UpdateTransactionDto,
 } from 'src/dto/transaction.dto';
+import { WalletService } from 'src/wallet/wallet.service';
 
 @Injectable()
 export class TransactionService {
   constructor(
     @InjectModel('Transaction') private transactionModel: Model<ITransaction>,
+    private readonly walletService: WalletService,
   ) {}
 
   async createTransaction(
     createTransactionDto: CreateTransactionDto,
   ): Promise<ITransaction> {
+    const tran = await this.transactionModel.findOne({
+      reference: createTransactionDto.reference,
+    });
+
+    if (tran) {
+      throw new NotAcceptableException('Transaction already exist');
+    }
+
     const newTransaction = new this.transactionModel(createTransactionDto);
+    await this.walletService.creditWallet(
+      createTransactionDto.userId,
+      createTransactionDto.amount,
+    );
     return newTransaction.save();
   }
 

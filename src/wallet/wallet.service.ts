@@ -14,16 +14,39 @@ export class WalletService {
   }
 
   async updateWallet(
-    userId: string,
+    wallerId: string,
     updateWalletDto: UpdateWalletDto,
   ): Promise<IWallet> {
     const existingWallet = await this.walletModel.findByIdAndUpdate(
-      userId,
+      wallerId,
       updateWalletDto,
       { new: true },
     );
     if (!existingWallet) {
+      throw new NotFoundException(`Wallet #${wallerId} not found`);
+    }
+    return existingWallet;
+  }
+
+  async creditWallet(userId: string, amount: number): Promise<IWallet> {
+    const userWallet = await this.getWalletByUser(userId);
+
+    if (!userWallet) {
       throw new NotFoundException(`Wallet #${userId} not found`);
+    }
+
+    const updateData = {
+      balance: userWallet.balance + amount,
+    };
+
+    const existingWallet = await this.walletModel.findByIdAndUpdate(
+      userWallet._id,
+      updateData,
+      { new: true },
+    );
+
+    if (!existingWallet) {
+      throw new NotFoundException(`Wallet  balance not updated. Contact Admin`);
     }
     return existingWallet;
   }
