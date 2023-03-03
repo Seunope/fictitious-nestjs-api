@@ -91,11 +91,11 @@ export class TransactionService {
     return existingTransaction;
   }
 
-  async getTransactionByUser(userId: string): Promise<ITransaction> {
+  async getTransactionsByUser(userId: string): Promise<ITransaction[]> {
     const existingTransaction = await this.transactionModel
-      .findOne({ userId })
+      .find({ userId })
       .exec();
-    if (!existingTransaction) {
+    if (!existingTransaction && existingTransaction.length !== 0) {
       throw new NotFoundException(`Transaction #${userId} not found`);
     }
     return existingTransaction;
