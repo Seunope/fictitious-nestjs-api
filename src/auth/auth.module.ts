@@ -8,6 +8,8 @@ import { UserSchema } from 'src/schema/user.schema';
 import { AuthController } from './auth.controller';
 import { UserService } from 'src/user/user.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { WalletService } from 'src/wallet/wallet.service';
+import { WalletSchema } from 'src/schema/wallet.schema';
 
 @Module({
   imports: [
@@ -17,9 +19,12 @@ import { JwtStrategy } from './strategies/jwt.strategy';
       secret: 'adafakjgajdvasjdvagskdasdgad', // process.env.JWT_SECRET, // new ConfigService().get('JWT_SECRET'), // process.env.JWT_SECRET,
       signOptions: { expiresIn: '120m' },
     }),
-    MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
+    MongooseModule.forFeature([
+      { name: 'User', schema: UserSchema },
+      { name: 'Wallet', schema: WalletSchema },
+    ]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UserService, JwtStrategy],
+  providers: [AuthService, UserService, WalletService, JwtStrategy],
 })
 export class AuthModule {}

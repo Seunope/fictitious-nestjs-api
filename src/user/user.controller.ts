@@ -12,7 +12,6 @@ import {
   NotAcceptableException,
   UseGuards,
 } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
 import { UserService } from 'src/user/user.service';
 import { CreateUserDto, UpdateUserDto } from 'src/dto/user.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
@@ -24,18 +23,14 @@ export class UserController {
   @Post('signup')
   async createUser(@Res() response, @Body() createUserDto: CreateUserDto) {
     try {
-      const user = await this.userService.getUserByEmail(createUserDto.email);
+      const user = await this.userService.getUserByEmail(
+        createUserDto.email,
+        true,
+      );
 
       if (user) {
         throw new NotAcceptableException('User already exist');
       }
-
-      const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(
-        createUserDto.password,
-        saltRounds,
-      );
-      createUserDto.password = hashedPassword;
 
       const newUser = await this.userService.createUser(createUserDto);
 
