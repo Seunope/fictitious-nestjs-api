@@ -9,7 +9,7 @@ export class UserService {
   constructor(@InjectModel('User') private userModel: Model<IUser>) {}
 
   async createUser(createUserDto: CreateUserDto): Promise<IUser> {
-    const newUser = await new this.userModel(createUserDto);
+    const newUser = new this.userModel(createUserDto);
     return newUser.save();
   }
 
@@ -40,6 +40,20 @@ export class UserService {
     const existingUser = await this.userModel.findById(userId).exec();
     if (!existingUser) {
       throw new NotFoundException(`User #${userId} not found`);
+    }
+    delete existingUser.password;
+
+    return existingUser;
+  }
+
+  async getUserByEmail(email: string): Promise<IUser> {
+    const existingUser = await this.userModel
+      .findOne({
+        email,
+      })
+      .exec();
+    if (!existingUser) {
+      throw new NotFoundException(`User #${email} not found`);
     }
     return existingUser;
   }

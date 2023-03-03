@@ -8,26 +8,45 @@ import {
   Delete,
   HttpStatus,
   Controller,
+  NotAcceptableException,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { CreateUserDto, UpdateUserDto } from 'src/dto/user.dto';
+import * as bcrypt from 'bcrypt';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post()
+  @Post('signup')
   async createUser(@Res() response, @Body() createUserDto: CreateUserDto) {
     try {
+      const user = await this.userService.getUserByEmail(createUserDto.email);
+
+      if (user) {
+        throw new NotAcceptableException('User already exist');
+      }
+
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(
+        createUserDto.password,
+        saltRounds,
+      );
+      createUserDto.password = hashedPassword;
+
       const newUser = await this.userService.createUser(createUserDto);
+
+      delete newUser.password;
       return response.status(HttpStatus.CREATED).json({
         message: 'User has been created successfully',
-        newUser,
+        data: newUser,
       });
     } catch (err) {
       return response.status(HttpStatus.BAD_REQUEST).json({
         statusCode: 400,
-        message: 'Error: User not created!',
+        message: err.message || 'Error: User not created!',
         error: 'Bad Request',
       });
     }
@@ -46,7 +65,7 @@ export class UserController {
       );
       return response.status(HttpStatus.OK).json({
         message: 'User has been successfully updated',
-        existingUser,
+        data: existingUser,
       });
     } catch (err) {
       return response.status(err.status).json(err.response);
@@ -58,7 +77,7 @@ export class UserController {
       const userData = await this.userService.getAllUsers();
       return response.status(HttpStatus.OK).json({
         message: 'All users data found successfully',
-        userData,
+        data: userData,
       });
     } catch (err) {
       return response.status(err.status).json(err.response);
@@ -66,12 +85,16 @@ export class UserController {
   }
 
   @Get('/:id')
+  @UseGuards(AuthGuard('local'))
   async getUser(@Res() response, @Param('id') userId: string) {
     try {
       const existingUser = await this.userService.getUser(userId);
+      //   delete existingUser.password;
+
+      //   console.log('sdsdsdsd', existingUser.password);
       return response.status(HttpStatus.OK).json({
         message: 'User found successfully',
-        existingUser,
+        data: existingUser,
       });
     } catch (err) {
       return response.status(err.status).json(err.response);
@@ -84,7 +107,7 @@ export class UserController {
       const deletedUser = await this.userService.deleteUser(userId);
       return response.status(HttpStatus.OK).json({
         message: 'User deleted successfully',
-        deletedUser,
+        data: deletedUser,
       });
     } catch (err) {
       return response.status(err.status).json(err.response);

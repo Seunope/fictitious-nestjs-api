@@ -18,7 +18,7 @@ export class CreateUserDto {
   readonly email: string;
 
   @IsNotEmpty()
-  readonly password: string;
+  password: string;
 }
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {}

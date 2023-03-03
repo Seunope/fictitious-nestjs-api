@@ -1,59 +1,36 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotAcceptableException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { AuthDto } from '../dto';
+import { UserService } from 'src/user/user.service';
+import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  async signup(dto: AuthDto) {
-    // generate the password hash
-    // const hash = await argon.hash(dto.password);
-    // // save the new user in the db
-    // try {
-    //   const user = await this.prisma.user.create({
-    //     data: {
-    //       email: dto.email,
-    //       hash,
-    //     },
-    //   });
-    //   return this.signToken(user.id, user.email);
-    // } catch (error) {
-    //   if (
-    //     error instanceof
-    //     PrismaClientKnownRequestError
-    //   ) {
-    //     if (error.code === 'P2002') {
-    //       throw new ForbiddenException(
-    //         'Credentials taken',
-    //       );
-    //     }
-    //   }
-    //   throw error;
-    // }
-  }
+  constructor(
+    private readonly userService: UserService,
+    private jwtService: JwtService,
+  ) {}
 
   async login(dto: AuthDto) {
-    // generate the password hash
-    // const hash = await argon.hash(dto.password);
-    // // save the new user in the db
-    // try {
-    //   const user = await this.prisma.user.create({
-    //     data: {
-    //       email: dto.email,
-    //       hash,
-    //     },
-    //   });
-    //   return this.signToken(user.id, user.email);
-    // } catch (error) {
-    //   if (
-    //     error instanceof
-    //     PrismaClientKnownRequestError
-    //   ) {
-    //     if (error.code === 'P2002') {
-    //       throw new ForbiddenException(
-    //         'Credentials taken',
-    //       );
-    //     }
-    //   }
-    //   throw error;
-    // }
+    const user = await this.userService.getUserByEmail(dto.email);
+    if (!user) return null;
+    const passwordValid = await bcrypt.compare(dto.password, user.password);
+    if (!user) {
+      throw new NotAcceptableException('could not find the user');
+    }
+    if (user && passwordValid) {
+      const payload = { email: dto.email, sub: user._id };
+      const token = this.jwtService.sign(payload);
+      return {
+        token,
+        user,
+      };
+    }
+
+    throw new ForbiddenException('Credentials wrong');
   }
 }
