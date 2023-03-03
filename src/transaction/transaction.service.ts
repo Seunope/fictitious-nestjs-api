@@ -31,24 +31,44 @@ export class TransactionService {
     }
 
     const newTransaction = new this.transactionModel(createTransactionDto);
-    await this.walletService.creditWallet(
-      createTransactionDto.userId,
-      createTransactionDto.amount,
-    );
+
+    if (createTransactionDto.type === 'credit') {
+      await this.walletService.creditWallet(
+        createTransactionDto.userId,
+        createTransactionDto.amount,
+        createTransactionDto.reference,
+        newTransaction._id,
+      );
+    } else {
+      await this.walletService.creditWallet(
+        null,
+        createTransactionDto.amount,
+        createTransactionDto.reference,
+        newTransaction._id,
+        createTransactionDto.receiverWalletNumber,
+      );
+      await this.walletService.debitWallet(
+        createTransactionDto.userId,
+        createTransactionDto.amount,
+        createTransactionDto.reference,
+        newTransaction._id,
+      );
+    }
+
     return newTransaction.save();
   }
 
   async updateTransaction(
-    userId: string,
+    id: string,
     updateTransactionDto: UpdateTransactionDto,
   ): Promise<ITransaction> {
     const existingTransaction = await this.transactionModel.findByIdAndUpdate(
-      userId,
+      id,
       updateTransactionDto,
       { new: true },
     );
     if (!existingTransaction) {
-      throw new NotFoundException(`Transaction #${userId} not found`);
+      throw new NotFoundException(`Transaction #${id} not found`);
     }
     return existingTransaction;
   }

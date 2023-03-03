@@ -14,6 +14,10 @@ import { TransactionModule } from './transaction/transaction.module';
 import { TransactionSchema } from './schema/transaction.schema';
 import { TransactionController } from './transaction/transaction.controller';
 import { TransactionService } from './transaction/transaction.service';
+import { LedgerModule } from './ledger/ledger.module';
+import { LedgerSchema } from './schema/ledger.schema';
+import { LedgerService } from './ledger/ledger.service';
+import { LedgerController } from './ledger/ledger.controller';
 
 @Module({
   imports: [
@@ -24,14 +28,21 @@ import { TransactionService } from './transaction/transaction.service';
     MongooseModule.forFeature([
       { name: 'User', schema: UserSchema },
       { name: 'Wallet', schema: WalletSchema },
+      { name: 'Ledger', schema: LedgerSchema },
       { name: 'Transaction', schema: TransactionSchema },
     ]),
     AuthModule,
     UserModule,
     WalletModule,
+    LedgerModule,
     TransactionModule,
   ],
-  providers: [UserService, WalletService, TransactionService],
-  controllers: [UserController, WalletController, TransactionController],
+  providers: [UserService, WalletService, TransactionService, LedgerService],
+  controllers: [
+    UserController,
+    WalletController,
+    LedgerController,
+    TransactionController,
+  ],
 })
 export class AppModule {}

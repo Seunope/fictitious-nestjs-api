@@ -11,6 +11,8 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { WalletService } from 'src/wallet/wallet.service';
 import { WalletSchema } from 'src/schema/wallet.schema';
 import { TransactionSchema } from 'src/schema/transaction.schema';
+import { LedgerSchema } from 'src/schema/ledger.schema';
+import { LedgerService } from 'src/ledger/ledger.service';
 
 @Module({
   imports: [
@@ -23,10 +25,17 @@ import { TransactionSchema } from 'src/schema/transaction.schema';
     MongooseModule.forFeature([
       { name: 'User', schema: UserSchema },
       { name: 'Wallet', schema: WalletSchema },
+      { name: 'Ledger', schema: LedgerSchema },
       { name: 'Transaction', schema: TransactionSchema },
     ]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UserService, WalletService, JwtStrategy],
+  providers: [
+    AuthService,
+    UserService,
+    JwtStrategy,
+    WalletService,
+    LedgerService,
+  ],
 })
 export class AuthModule {}

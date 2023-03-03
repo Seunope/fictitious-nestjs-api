@@ -18,6 +18,9 @@ export class Transaction {
   @Prop()
   description: string;
 
+  @Prop({ type: Object })
+  meta: object;
+
   @Prop()
   platform: string;
 

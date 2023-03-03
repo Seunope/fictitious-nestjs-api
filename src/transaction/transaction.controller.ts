@@ -3,7 +3,6 @@ import {
   Controller,
   Get,
   HttpStatus,
-  NotAcceptableException,
   Post,
   Req,
   Res,
@@ -19,7 +18,7 @@ export class TransactionController {
 
   @UseGuards(JwtAuthGuard)
   @Post('fund')
-  async createUser(
+  async deposit(
     @Req() request,
     @Res() response,
     @Body() createUserDto: CreateTransactionDto,
@@ -30,6 +29,41 @@ export class TransactionController {
       userId,
       amount: Number(createUserDto.amount),
       type: 'credit',
+    };
+
+    try {
+      const newTrans = await this.transactionService.createTransaction(data);
+
+      return response.status(HttpStatus.CREATED).json({
+        message: 'User has been created successfully',
+        data: newTrans,
+      });
+    } catch (err) {
+      return response.status(HttpStatus.BAD_REQUEST).json({
+        statusCode: 400,
+        message: err.message || 'Error: User not created!',
+        error: 'Bad Request',
+      });
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('send-money')
+  async withdraw(
+    @Req() request,
+    @Res() response,
+    @Body() sendMoneyTransDto: CreateTransactionDto,
+  ) {
+    const userId = request.user.userId;
+    const data = {
+      ...sendMoneyTransDto,
+      userId,
+      meta: {
+        receiverWalletNumber: sendMoneyTransDto.receiverWalletNumber,
+        amount: sendMoneyTransDto.amount,
+      },
+      amount: Number(sendMoneyTransDto.amount),
+      type: 'debit',
     };
 
     try {
