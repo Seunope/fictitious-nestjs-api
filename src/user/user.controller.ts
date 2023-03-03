@@ -5,16 +5,17 @@ import {
   Body,
   Res,
   Param,
+  Req,
   Delete,
   HttpStatus,
   Controller,
   NotAcceptableException,
   UseGuards,
 } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { UserService } from 'src/user/user.service';
 import { CreateUserDto, UpdateUserDto } from 'src/dto/user.dto';
-import * as bcrypt from 'bcrypt';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('user')
 export class UserController {
@@ -52,6 +53,15 @@ export class UserController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('/me')
+  me(@Req() request) {
+    const userId = request.user.userId;
+
+    return this.userService.getUser(userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Put('/:id')
   async updateUser(
     @Res() response,
@@ -71,6 +81,7 @@ export class UserController {
       return response.status(err.status).json(err.response);
     }
   }
+
   @Get()
   async getUsers(@Res() response) {
     try {
@@ -84,8 +95,8 @@ export class UserController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('/:id')
-  @UseGuards(AuthGuard('local'))
   async getUser(@Res() response, @Param('id') userId: string) {
     try {
       const existingUser = await this.userService.getUser(userId);
@@ -101,6 +112,7 @@ export class UserController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete('/:id')
   async deleteUser(@Res() response, @Param('id') userId: string) {
     try {

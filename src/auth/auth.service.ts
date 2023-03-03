@@ -15,6 +15,19 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+  async validateUser(dto: AuthDto): Promise<any> {
+    const user = await this.userService.getUserByEmail(dto.email);
+    if (!user) return null;
+    const passwordValid = await bcrypt.compare(dto.password, user.password);
+    if (!user) {
+      throw new NotAcceptableException('could not find the user');
+    }
+    if (user && passwordValid) {
+      return user;
+    }
+    return null;
+  }
+
   async login(dto: AuthDto) {
     const user = await this.userService.getUserByEmail(dto.email);
     if (!user) return null;
