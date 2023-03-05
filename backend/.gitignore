@@ -36,6 +36,6 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 ../frontend/yarn.lock
-../frontend/tess
+./frontend/tess
 
 .env
