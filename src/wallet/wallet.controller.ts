@@ -14,7 +14,7 @@ export class WalletController {
   constructor(private readonly walletService: WalletService) {}
 
   @UseGuards(JwtAuthGuard)
-  @Get()
+  @Get('/me')
   async getWallet(@Req() request) {
     const userId = request.user.userId;
     const wallet = await this.walletService.getWalletByUser(userId);
